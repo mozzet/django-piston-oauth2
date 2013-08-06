@@ -1,5 +1,6 @@
 import sys, inspect
 
+import django
 from django.http import (HttpResponse, Http404, HttpResponseNotAllowed,
     HttpResponseForbidden, HttpResponseServerError)
 from django.views.debug import ExceptionReporter
@@ -72,7 +73,7 @@ class Resource(object):
         `Resource` subclass.
         """
         resp = rc.BAD_REQUEST
-        resp.write(' '+str(e.form.errors))
+        resp.write(' '+unicode(e.form.errors))
         return resp
 
     @property
@@ -181,7 +182,7 @@ class Resource(object):
         # If we're looking at a response object which contains non-string
         # content, then assume we should use the emitter to format that 
         # content
-        if isinstance(result, HttpResponse) and not result._is_string:
+        if isinstance(result, HttpResponse):
             status_code = result.status_code
             # Note: We can't use result.content here because that method attempts
             # to convert the content into a string which we don't want. 
@@ -189,6 +190,8 @@ class Resource(object):
             result = result._container
      
         srl = emitter(result, typemapper, handler, fields, anonymous)
+
+        print srl
 
         try:
             """
@@ -266,7 +269,7 @@ class Resource(object):
                 msg += 'Resource does not expect any parameters.'
 
             if self.display_errors:
-                msg += '\n\nException was: %s' % str(e)
+                msg += '\n\nException was: %s' % unicode(e)
 
             result.content = format_error(msg)
             return result
